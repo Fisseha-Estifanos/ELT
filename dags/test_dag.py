@@ -8,7 +8,7 @@ from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.bash import BashOperator
 
 from random import randint
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def _choose_best_model(ti):
@@ -28,7 +28,10 @@ def _training_model():
 
 
 with DAG("my_dag", start_date=datetime(2022, 9, 19),
-         schedule_interval="@daily", catchup=False) as dag:
+         description='Getting Started with Airflow',
+         # schedule_interval="@daily",
+         schedule_interval=timedelta(hours=1),      # run every hour
+         catchup=False) as dag:
 
     training_model_A = PythonOperator(
         task_id="training_model_A",
