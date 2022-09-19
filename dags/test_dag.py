@@ -30,7 +30,7 @@ def _training_model():
 with DAG("my_dag", start_date=datetime(2022, 9, 19),
          description='Getting Started with Airflow',
          # schedule_interval="@daily",
-         schedule_interval=timedelta(hours=1),      # run every hour
+         schedule=timedelta(hours=1),      # run every hour
          catchup=False) as dag:
 
     training_model_A = PythonOperator(

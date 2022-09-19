@@ -1,8 +1,8 @@
 # importing the required libraries
 from datetime import timedelta, datetime
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
-from airflow.operators.bash_operator import BashOperator
+from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
 from airflow.providers.mysql.operators.mysql import MySqlOperator
 
 
@@ -22,7 +22,7 @@ dag = DAG(
     'airflow_get_started',
     default_args=default_args,
     description='Getting Started with Airflow',
-    schedule_interval=timedelta(hours=1),       # run every hour
+    schedule=timedelta(hours=1),       # run every hour
     catchup=False           # do not perform a backfill of missing runs
 )
 
