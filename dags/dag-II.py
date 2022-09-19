@@ -16,6 +16,7 @@ default_args = {
     'retries': 1,
     'retry_delay': timedelta(minutes=1)
 }
+
 # define the DAG
 dag = DAG(
     'airflow_get_started',
@@ -44,7 +45,7 @@ bash1 = BashOperator(
 )
 mysql1 = MySqlOperator(
     task_id='mysql1',
-    mysql_conn_id='airflow_db',     # name of the connection we defined in Admin
+    mysql_conn_id='airflow_db',     # name of the connection we defined
     sql="""INSERT INTO airflow_db.airflow_tb values (5);""",    # sql command;
     dag=dag
 )
