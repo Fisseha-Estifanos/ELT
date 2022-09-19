@@ -27,7 +27,7 @@ def _training_model():
     return randint(1, 10)
 
 
-with DAG("my_dag", start_date=datetime(2021, 1, 1),
+with DAG("my_dag", start_date=datetime(2022, 9, 19),
          schedule_interval="@daily", catchup=False) as dag:
 
     training_model_A = PythonOperator(
@@ -61,3 +61,5 @@ with DAG("my_dag", start_date=datetime(2021, 1, 1),
     )
 
     [training_model_A, training_model_B, training_model_C] >> choose_best_model >> [accurate, inaccurate]
+
+print('over and out')
