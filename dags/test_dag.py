@@ -27,8 +27,21 @@ def _training_model():
     return randint(1, 10)
 
 
+default_args = {
+    'owner': 'foxtrot',
+    'depends_on_past': False,
+    'start_date': datetime(2022, 9, 19),
+    # 'start_date': days_ago(5),
+    'email': ['fisseha.137@gmail.com'],
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=1)
+}
+
 with DAG("my_dag", start_date=datetime(2022, 9, 19),
          description='Getting Started with Airflow',
+         default_args=default_args,
          # schedule_interval="@daily",
          schedule=timedelta(hours=1),      # run every hour
          catchup=False) as dag:

@@ -9,6 +9,7 @@ from airflow.providers.mysql.operators.mysql import MySqlOperator
 default_args = {
     'owner': 'foxtrot',
     'depends_on_past': False,
+    # 'start_date': days_ago(5),
     'start_date': datetime(2022, 9, 19),
     'email': ['fisseha.137@gmail.com'],
     'email_on_failure': False,
