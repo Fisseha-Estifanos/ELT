@@ -3,11 +3,13 @@ A script to visualize data.
 """
 
 # imports
+import os
 import logging
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
+import defaults as defs
 # import plotly.graph_objects as go
 # from plotly.subplots import make_subplots
 
@@ -33,7 +35,8 @@ class dataVisualizer():
         """
         try:
             # setting up logger
-            self.logger = self.setup_logger('../logs/visualizer_root.log')
+            self.logger = self.setup_logger(defs.log_path +
+                                            'visualizer_root.log')
             self.logger.info('\n    #####-->    Data visualizer logger for ' +
                              f'{fromThe}    <--#####\n')
             print('Data visualizer in action')
@@ -67,6 +70,12 @@ class dataVisualizer():
             The final logger that has been setup up
         """
         try:
+            # Check whether the log path exists or not
+            if not os.path.exists(defs.log_path):
+                # Create a new log directory if it does not exist
+                os.makedirs(defs.log_path)
+                print("Storage directory for logs created!")
+
             # getting the log path
             log_path = log_path
 
