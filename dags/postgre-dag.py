@@ -41,10 +41,10 @@ with DAG(
         # sql="../sql/populate_pet_schema.sql",
         sql="""
         -- populate pet table
-        INSERT INTO pet VALUES ( 'Max', 'Dog', '2018-07-05', 'Jane');
-        INSERT INTO pet VALUES ( 'Susie', 'Cat', '2019-05-01', 'Phil');
-        INSERT INTO pet VALUES ( 'Lester', 'Hamster', '2020-06-23', 'Lily');
-        INSERT INTO pet VALUES ( 'Quincy', 'Parrot', '2013-08-11', 'Anne');
+        INSERT INTO pet VALUES (1, 'Max', 'Dog', '2018-07-05', 'Jane');
+        INSERT INTO pet VALUES (2, 'Susie', 'Cat', '2019-05-01', 'Phil');
+        INSERT INTO pet VALUES (3, 'Lester', 'Hamster', '2020-06-23', 'Lily');
+        INSERT INTO pet VALUES (4, 'Quincy', 'Parrot', '2013-08-11', 'Anne');
         """,
     )
 
@@ -57,9 +57,9 @@ with DAG(
     get_birth_date = PostgresOperator(
         task_id="get_birth_date",
         postgres_conn_id="postgres_default",
-        sql="SELECT * FROM pet WHERE birth_date BETWEEN SYMMETRIC %(begin_date)s AND %(end_date)s",
+        sql="SELECT * FROM pet WHERE birth_date BETWEEN SYMMETRIC " +
+            "%(begin_date)s AND %(end_date)s",
         parameters={"begin_date": "2020-01-01", "end_date": "2020-12-31"},
     )
 
 create_pet_table >> populate_pet_table >> get_all_pets >> get_birth_date
-# sudo -u postgres psql postgres
