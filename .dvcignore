@@ -3,8 +3,9 @@
 # https://dvc.org/doc/user-guide/dvcignore
 
 # files that are not related to any data files
-scripts/
-notebooks/
-logs/
 dags/
+logs/
+notebooks/
+plots/
+scripts/
 sql/
