@@ -20,3 +20,6 @@ data_file = data_path + data_file_name
 
 # the path to the plots folder
 plot_path = 'plots/'
+
+# the path to the log files
+log_path = repo + 'logs/'
