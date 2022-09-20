@@ -3,11 +3,13 @@ A script to clean data.
 """
 
 # imports
+import os
+import logging
 import pandas as pd
 import numpy as np
+import defaults as defs
 from sklearn.cluster import KMeans
 from scipy.spatial.distance import cdist
-import logging
 from sklearn import preprocessing
 
 
@@ -32,7 +34,8 @@ class dataCleaner():
         """
         try:
             # setting up logger
-            self.logger = self.setup_logger('../logs/cleaner_root.log')
+            self.logger = self.setup_logger(defs.log_path +
+                                            'visualizer_root.log')
             self.logger.info('\n    #####-->    Data cleaner logger for ' +
                              f'{fromThe}    <--#####\n')
             print('Data cleaner in action')
@@ -54,6 +57,12 @@ class dataCleaner():
             The final logger that has been setup up
         """
         try:
+            # Check whether the log path exists or not
+            if not os.path.exists(defs.log_path):
+                # Create a new log directory if it does not exist
+                os.makedirs(defs.log_path)
+                print("Storage directory for logs created!")
+
             # getting the log path
             log_path = log_path
 
@@ -101,14 +110,14 @@ class dataCleaner():
         """
         try:
             for col in cols:
-                df = df[df.columns.drop(list(df.filter(regex = col)))]
+                df = df[df.columns.drop(list(df.filter(regex=col)))]
                 self.logger.info(f'feature: {col} removed successfully')
                 print(f'feature: {col} removed successfully')
         except Exception as e:
             self.logger.error(e, exec_info=True)
             print(e)
         finally:
-            return df        
+            return df
 
     def percent_missing(self, df: pd.DataFrame) -> None:
         """
@@ -136,8 +145,12 @@ class dataCleaner():
             totalMissing = missingCount.sum()
 
             # Calculate percentage of missing values
-            print(f"The dataset contains {round(((totalMissing/totalCells)*100), 10)} % missing values")
-            self.logger.info(f"The dataset contains {round(((totalMissing/totalCells)*100), 10)} % missing values")
+            print("The dataset contains " +
+                  f"{round(((totalMissing/totalCells)*100), 10)} " +
+                  "% missing values")
+            self.logger.info("The dataset contains " +
+                             f"{round(((totalMissing/totalCells)*100), 10)} " +
+                             "% missing values")
         except Exception as e:
             self.logger.error(e, exec_info=True)
             print(e)
@@ -163,9 +176,11 @@ class dataCleaner():
         """
         try:
             print(f'features to be filled with median values: {cols}')
-            self.logger.info(f'features to be filled with median values: {cols}')
+            self.logger.info('features to be filled with median values: ' +
+                             f'{cols}')
             df[cols] = df[cols].fillna(df[cols].median())
-            self.logger.info(f'features: {cols} filled with median successfully')
+            self.logger.info(f'features: {cols} filled with median ' +
+                             'successfully')
             print(f'features: {cols} filled with median successfully')
         except Exception as e:
             self.logger.error(e, exec_info=True)
@@ -224,7 +239,8 @@ class dataCleaner():
             The fixed data frame
         """
         try:
-            self.logger.info(f'feature to be filled with median values: {column}')
+            self.logger.info('feature to be filled with median values: ' +
+                             f'{column}')
             print(f'feature to be filled with median values: {column}')
             df[column] = np.where(df[column] > df[column].quantile(0.95),
                                   df[column].median(), df[column])
@@ -236,10 +252,11 @@ class dataCleaner():
         finally:
             return df[column]
 
-    def replace_outlier_with_median(self, dataFrame: pd.DataFrame, feature: str) -> pd.DataFrame:
+    def replace_outlier_with_median(self, dataFrame: pd.DataFrame,
+                                    feature: str) -> pd.DataFrame:
         """
         A function to fix outliers with median
-        
+
         Parameters
         =--------=
         df: pandas data frame
@@ -264,12 +281,17 @@ class dataCleaner():
 
             dataFrame[feature] = np.where(
                 dataFrame[feature] > upper_whisker, median, dataFrame[feature])
-            self.logger.info(f'feature: {feature} outlier values greater than: {upper_whisker} fixed successfully with the median value of: {median}')
-            print(f'feature: {feature} outlier values greater than: {upper_whisker} fixed successfully with the median value of: {median}')
+            self.logger.info(f'feature: {feature} outlier values greater ' +
+                             f'than: {upper_whisker} fixed successfully ' +
+                             f'with the median value of: {median}')
+            print(f'feature: {feature} outlier values greater than: ' +
+                  f'{upper_whisker} fixed successfully with the median ' +
+                  f'value of: {median}')
             dataFrame[feature] = np.where(
                 dataFrame[feature] < lower_whisker, median, dataFrame[feature])
-            self.logger.info(f'feature: {feature} outlier values less than: '
-            + '{lower_whisker} fixed successfully with the median value of: {median}')
+            self.logger.info(f'feature: {feature} outlier values less than: ' +
+                             f'{lower_whisker} fixed successfully with the ' +
+                             f'median value of: {median}')
             print(f'feature: {feature} outlier values less than: '
                   + '{lower_whisker} fixed successfully with the median '
                   + 'value of: {median}')
@@ -348,14 +370,11 @@ class dataCleaner():
             self.logger.error(e, exec_info=True)
             print(e)
 
-
-
     # new additions
     # TODO: add try, except finally _ DONE
     # TODO: add comment _ DONE
     # TODO: add logger _ DONE
     # TODO: PEP8
-
     # TODO: compare this fill method with others
     def fix_missing_ffill(self, df: pd.DataFrame, cols: list) -> None:
         """
@@ -442,7 +461,7 @@ class dataCleaner():
         =--------=
         df: pandas dataframe
             The main dataframe
-        
+
         Returns
         =-----=
         mis_val_table_ren_columns: pandas data frame
@@ -500,7 +519,7 @@ class dataCleaner():
             List of features containing the names of the missing values
         value: integer
             The value to fill the missing values with
-        
+
         Returns
         =-----=
         None: noting
@@ -546,9 +565,9 @@ class dataCleaner():
         """
         try:
             for col in cols:
-                df[col] = df[col].fillna(df[col].rolling(window=window, 
+                df[col] = df[col].fillna(df[col].rolling(window=window,
                                          min_periods=min_period).mean())
-                self.logger.info(f'column: {col} filled with the rolling ' + 
+                self.logger.info(f'column: {col} filled with the rolling ' +
                                  f'method, window:{window}, min_periods: ' +
                                  f'{min_period}')
                 print(f'column: {col} filled with the rolling method, ' +
@@ -569,13 +588,13 @@ class dataCleaner():
             The main dataframe
         columns: list
             List of features to be converted to string data types
-        
+
         Returns
         =-----=
         df: pandas data frame
             The converted data frame
         """
-        try: 
+        try:
             for col in columns:
                 df[col] = df[col].astype("string")
                 self.logger.info(f'feature: {col} converted to string data type format')
@@ -596,7 +615,7 @@ class dataCleaner():
             The main dataframe
         columns: list
             List of features to be converted to numeric data types
-        
+
         Returns
         =-----=
         df: pandas data frame
@@ -623,7 +642,7 @@ class dataCleaner():
             The main dataframe
         columns: list
             List of features to be converted to integer data types
-        
+
         Returns
         =-----=
         df: pandas data frame
@@ -650,7 +669,7 @@ class dataCleaner():
             The main dataframe
         columns: list
             List of features to be converted to datetime data types
-        
+
         Returns
         =-----=
         df: pandas data frame
@@ -679,7 +698,7 @@ class dataCleaner():
             List of features to be multiplied by a factor
         factor: float
             The multiplying factor
-        
+
         Returns
         =-----=
         df: pandas data frame
@@ -755,7 +774,7 @@ class dataCleaner():
         except Exception as e:
             self.logger.error(e, exec_info=True)
             print(e)
-    
+
     def getMonth(self, month_list: list, index: int) -> int:
         """
         A function to return the index of a given month
@@ -785,14 +804,14 @@ class dataCleaner():
     def encode_to_numeric(self, data: pd.DataFrame, columns: list) -> pd.DataFrame:
         """
         A function to change categorical variables to numerical value
-        
+
         Parameters
         =--------=
         data: pandas data frame
             The main data frame
         columns: list
             The list of features to be label encoded
-        
+
         Returns
         =-----=
         data: pandas dataframe
@@ -810,7 +829,8 @@ class dataCleaner():
         finally:
             return data
 
-    def save_data(self, df: pd.DataFrame, path: str, type: str = 'csv', index: bool = False) -> None:
+    def save_data(self, df: pd.DataFrame, path: str, type: str = 'csv',
+                  index: bool = False) -> None:
         """
         A function to save data frames to file
 
@@ -896,11 +916,12 @@ class dataCleaner():
             self.logger.error(e, trace_info=True)
             print(e, 'Failed to change columns type')
         finally:
-            return df 
+            return df
 
-    def optimize_df(self, df : pd.DataFrame) -> pd.DataFrame:
+    def optimize_df(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        Returns the DataFrames information after all column data types are optimized (to a lower data type)
+        Returns the DataFrames information after all column data types are
+        optimized (to a lower data type)
         Parameters
         ----------
         None
@@ -912,17 +933,17 @@ class dataCleaner():
         optimize = ['float64', 'int64']
         try:
             for col in data_types.index:
-                if(data_types[col] in optimize):
-                    if(data_types[col] == 'float64'):
+                if (data_types[col] in optimize):
+                    if (data_types[col] == 'float64'):
                         # downcast a float column
                         df[col] = pd.to_numeric(
                             df[col], downcast='float')
-                    elif(data_types[col] == 'int64'):
+                    elif (data_types[col] == 'int64'):
                         # downcast an integer column
                         df[col] = pd.to_numeric(
                             df[col], downcast='unsigned')
             self.logger.info(f"DataFrame optimized")
-            print(f"DataFrame optimized")
+            print("DataFrame optimized")
         except Exception as e:
             self.logger.error(e, trace_info=True)
             print(e, 'Failed to optimize')
