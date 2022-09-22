@@ -87,7 +87,7 @@ def loadDataToDWH():
         listOfRows = []
 
         for r in range(len(df)):
-            row = df.iloc[r,:][0].split(";")
+            row = df.iloc[r, :][0].split(";")
             listOfRows.append(row)
             base_row = row[:10]
             tracking_row = row[10:]
@@ -122,7 +122,7 @@ def loadDataToDWH():
 
         # the table to load to
         tableName = 'raw_data'
-        frame_ = new_df.to_sql(tableName, dbConnection, index=False)
+        new_df.to_sql(tableName, dbConnection, index=False)
     except ValueError as vx:
         print(vx)
     except Exception as e:
@@ -154,6 +154,22 @@ def organizeCols():
         data.info()
         print(f'shape: {data.shape}')
         print(f'columns: {data.columns}')
+
+        # separating the raw data into base data and tracking data
+        # base data separation
+        base_df = data.iloc[0:, 0:10]
+        # adding the base data to the DWH under the name base_data
+        base_table_Name = 'base_data'
+        base_df.to_sql(base_table_Name, dbConnection, index=False)
+
+        # tracking data separation
+        tracking_data = data.iloc[0:, 10:]
+        tracking_data.insert(0, 'track_id', list(data['track_id'].values),
+                             False)
+        # adding the tracking data to the DWH under the name tracking_data
+        tracking_data_Table_Name = 'tracking_data'
+        tracking_data.to_sql(tracking_data_Table_Name, dbConnection,
+                             index=False)
     except ValueError as vx:
         print(vx)
     except Exception as e:
@@ -200,8 +216,4 @@ organize_columns = PythonOperator(
 
 # entry_point >> extract_data >> mysql1
 entry_point >> extract_data >> load_data_to_postgreSQL_DWH >> organize_columns
-
-loadDataToDWH()
-organizeCols()
-
 print('ETL data pipeline DAG over and out')
