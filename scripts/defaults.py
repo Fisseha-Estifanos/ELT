@@ -23,3 +23,11 @@ plot_path = 'plots/'
 
 # the path to the log files
 log_path = repo + 'logs/'
+
+
+# airflow related paths
+# the data to download path - all drone data
+path_to_source = 'https://open-traffic.epfl.ch/wp-content/uploads/mydownloads.php'
+
+# the path to store the data to
+path_to_store_data = '~/Documents/10X/week_V/project-folder/ELT/data/fetched_data.csv'
