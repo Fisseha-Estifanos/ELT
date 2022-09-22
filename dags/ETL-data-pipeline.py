@@ -45,7 +45,7 @@ def startProcess():
     """
     Initial task
     """
-    print('Starting the extraction process')
+    print('Starting the extraction process . . .')
     return 'Starting the extraction process'
 
 
@@ -55,7 +55,7 @@ def loadDataToDWH():
     A data loader handler.
     Loads data from source csv file to postgreSQL DWH
     """
-    print('starting data loading task')
+    print('\nstarting loading data to the DWH . . .')
     try:
         # create connection to database
         alchemyEngine = create_engine(connection_string)
@@ -67,9 +67,62 @@ def loadDataToDWH():
         print(f'shape: {df.shape}')
         print(f'columns: {df.columns}')
 
+        # preparing the data before storing it to the DWH
+        columns = df.columns[0].split(";")
+        columns.append('trackings')
+
+        # setting up lists for each column
+        track_ids = []
+        types = []
+        traveled_d = []
+        avg_speeds = []
+        lat = []
+        lon = []
+        speed = []
+        lon_acc = []
+        lat_acc = []
+        time = []
+
+        trackings = []
+        listOfRows = []
+
+        for r in range(len(df)):
+            row = df.iloc[r,:][0].split(";")
+            listOfRows.append(row)
+            base_row = row[:10]
+            tracking_row = row[10:]
+            tracking = ','.join(tracking_row)
+
+            track_ids.append(base_row[0])
+            types.append(base_row[1])
+            traveled_d.append(base_row[2])
+            avg_speeds.append(base_row[3])
+            lat.append(base_row[4])
+            lon.append(base_row[5])
+            speed.append(base_row[6])
+            lon_acc.append(base_row[7])
+            lat_acc.append(base_row[8])
+            time.append(base_row[9])
+
+            trackings.append(tracking[1:])
+
+        # print the total number of prepared records
+        print(f'total number of records prepared: {len(listOfRows)}')
+
+        # prepare the data as a data frame format to load into the DWH
+        base_data = {columns[0]: track_ids, columns[1]: types,
+                     columns[2]: traveled_d, columns[3]: avg_speeds,
+                     'initial_'+columns[4]: lat, 'initial_'+columns[5]: lon,
+                     'initial_'+columns[6]: speed, 'initial_'+columns[7]:
+                     lon_acc, 'initial_'+columns[8]: lat_acc,
+                     'initial_'+columns[9]: time, columns[10]: trackings}
+
+        # crate the data frame
+        new_df = pd.DataFrame(base_data)
+
         # the table to load to
         tableName = 'raw_data'
-        frame_ = df.to_sql(tableName, dbConnection, index=False)
+        frame_ = new_df.to_sql(tableName, dbConnection, index=False)
     except ValueError as vx:
         print(vx)
     except Exception as e:
@@ -79,7 +132,7 @@ def loadDataToDWH():
     finally:
         # Close the database connection
         dbConnection.close()
-        return 'data loading completed'
+        return 'data loaded to DWH successfully completed'
 
 
 # TODO: refactor this handler to an ETL separate script
@@ -88,7 +141,7 @@ def organizeCols():
     A data column organize handler.
     Organize the columns of the data set properly
     """
-    print('starting loading data from DWH . . .')
+    print('\nstarting loading data from DWH . . .')
     try:
         # create connection to database
         alchemyEngine = create_engine(connection_string)
@@ -149,10 +202,6 @@ organize_columns = PythonOperator(
 entry_point >> extract_data >> load_data_to_postgreSQL_DWH >> organize_columns
 
 loadDataToDWH()
-#organizeCols()
+organizeCols()
 
 print('ETL data pipeline DAG over and out')
-# 0   track_id; type; traveled_d; avg_speed; lat; lon; speed; lon_acc; lat_acc; time  922 non-null    object
-
-# 0   index                                                            922 non-null    int64 
-#  1   track_id; type; traveled_d; avg_speed; lat; lon; speed; lon_acc  922 non-null    object
