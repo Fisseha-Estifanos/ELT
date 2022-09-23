@@ -167,7 +167,7 @@ def organizeCols():
         tracking_data.insert(0, 'track_id', list(data['track_id'].values),
                              False)
         # adding the tracking data to the DWH under the name tracking_data
-        tracking_data_Table_Name = 'tracking_data'
+        tracking_data_Table_Name = 'trackings_data'
         tracking_data.to_sql(tracking_data_Table_Name, dbConnection,
                              index=False)
     except ValueError as vx:
