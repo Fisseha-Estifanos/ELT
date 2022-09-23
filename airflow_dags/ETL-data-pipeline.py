@@ -69,6 +69,10 @@ def loadDataToDWH():
 
         # preparing the data before storing it to the DWH
         columns = df.columns[0].split(";")
+        columns_ = []
+        for cols in columns:
+            columns_.append(str.strip(cols))
+        columns = columns_
         columns.append('trackings')
 
         # setting up lists for each column
@@ -112,23 +116,22 @@ def loadDataToDWH():
         # prepare the data as a data frame format to load into the DWH
         base_data = {columns[0]: track_ids, columns[1]: types,
                      columns[2]: traveled_d, columns[3]: avg_speeds,
-                     'starting_'+columns[4]: lat, 'starting_'+columns[5]: lon,
-                     'starting_'+columns[6]: speed, 'starting_'+columns[7]:
-                     lon_acc, 'starting_'+columns[8]: lat_acc,
-                     'starting_'+columns[9]: time, columns[10]: trackings}
+                     columns[4]: lat, columns[5]: lon, columns[6]: speed,
+                     columns[7]: lon_acc, columns[8]: lat_acc,
+                     columns[9]: time, columns[10]: trackings}
 
         # crate the data frame
         new_df = pd.DataFrame(base_data)
 
         # the table to load to
-        tableName = 'raw_data'
+        tableName = 'raw_table'
         new_df.to_sql(tableName, dbConnection, index=False)
     except ValueError as vx:
         print(vx)
     except Exception as e:
         print(e)
     else:
-        print(f"PostgreSQL Table '{tableName}' has been created successfully.")
+        print(f"PostgreSQL table '{tableName}' has been created successfully.")
     finally:
         # Close the database connection
         dbConnection.close()
@@ -136,10 +139,10 @@ def loadDataToDWH():
 
 
 # TODO: refactor this handler to an ETL separate script
-def organizeCols():
+def organizeTables():
     """
-    A data column organize handler.
-    Organize the columns of the data set properly
+    A data table organize handler.
+    Organize the columns of the data set properly into two tables
     """
     print('\nstarting loading data from DWH . . .')
     try:
@@ -147,10 +150,10 @@ def organizeCols():
         alchemyEngine = create_engine(connection_string)
         dbConnection = alchemyEngine.connect()
 
-        data = pd.read_sql("select * from raw_data", dbConnection)
+        data = pd.read_sql("select * from raw_table", dbConnection)
         print('data loaded from warehouse successfully')
 
-        print('starting column organization . . .')
+        print('starting table organization . . .')
         data.info()
         print(f'shape: {data.shape}')
         print(f'columns: {data.columns}')
@@ -159,7 +162,7 @@ def organizeCols():
         # base data separation
         base_df = data.iloc[0:, 0:10]
         # adding the base data to the DWH under the name base_data
-        base_table_Name = 'base_data'
+        base_table_Name = 'base_table'
         base_df.to_sql(base_table_Name, dbConnection, index=False)
 
         # tracking data separation
@@ -167,7 +170,7 @@ def organizeCols():
         tracking_data.insert(0, 'track_id', list(data['track_id'].values),
                              False)
         # adding the tracking data to the DWH under the name tracking_data
-        tracking_data_Table_Name = 'trackings_data'
+        tracking_data_Table_Name = 'tracking_table'
         tracking_data.to_sql(tracking_data_Table_Name, dbConnection,
                              index=False)
     except ValueError as vx:
@@ -175,11 +178,54 @@ def organizeCols():
     except Exception as e:
         print(e)
     else:
-        print("column organized successfully")
+        print(f"PostgreSQL tables '{tracking_data_Table_Name}' and "
+              + f"'{base_table_Name}' has been created successfully.")
     finally:
         # Close the database connection
         dbConnection.close()
-        return 'column organization completed'
+        return 'table organization completed'
+
+
+# TODO: refactor this handler to an ETL separate script
+def createTrackingDetailTable():
+    """
+    A detail tracking trajectory table creating handler.
+    Creates a detail tracking trajectory table
+    """
+    print('\nstarting loading data from DWH . . .')
+    try:
+        # create connection to database
+        alchemyEngine = create_engine(connection_string)
+        dbConnection = alchemyEngine.connect()
+
+        data = pd.read_sql("select * from raw_table", dbConnection)
+        print('data loaded from warehouse successfully')
+
+        print('starting detail tracking trajectory table creation . . .')
+        data.info()
+        print(f'shape: {data.shape}')
+        print(f'columns: {data.columns}')
+
+        # detail tracking trajectory data preparation
+        detail_tracking_data = data.iloc[:, 4:10]
+        detail_tracking_data.insert(0, 'track_id',
+                                    list(data['track_id'].values), False)
+        # adding the tracking data to the DWH under the name of
+        # detail_tracking_data
+        detail_tracking_data_Table_Name = 'detail_tracking_table'
+        detail_tracking_data.to_sql(detail_tracking_data_Table_Name,
+                                    dbConnection, index=False)
+    except ValueError as vx:
+        print(vx)
+    except Exception as e:
+        print(e)
+    else:
+        print(f"PostgreSQL table '{detail_tracking_data_Table_Name}' has "
+              + "been created successfully.")
+    finally:
+        # Close the database connection
+        dbConnection.close()
+        return 'detail tracking trajectory completed'
 
 
 # TODO: refactor this handler to an ETL separate script
@@ -207,13 +253,25 @@ load_data_to_postgreSQL_DWH = PythonOperator(
 )
 
 # TODO: refactor this handler to an ETL separate script
-# data column organizer task - final task
-organize_columns = PythonOperator(
-    task_id='organize_data_columns',
-    python_callable=organizeCols,
+# data table organizer task - fourth task
+organize_tables = PythonOperator(
+    task_id='organize_data_tables',
+    python_callable=organizeTables,
     dag=etl_dag
 )
 
+# TODO: refactor this handler to an ETL separate script
+# trajectory details table creating task - final task
+create_details = PythonOperator(
+    task_id='create_detailed_trajectories',
+    python_callable=createTrackingDetailTable,
+    dag=etl_dag
+)
+
+loadDataToDWH()
+organizeTables()
+createTrackingDetailTable()
+
 # entry_point >> extract_data >> mysql1
-entry_point >> extract_data >> load_data_to_postgreSQL_DWH >> organize_columns
-print('ETL data pipeline DAG over and out')
+entry_point >> extract_data >> load_data_to_postgreSQL_DWH >> organize_tables >> create_details
+print('\nETL data pipeline DAG over and out')
