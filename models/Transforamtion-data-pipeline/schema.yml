@@ -1,0 +1,238 @@
+
+version: 2
+
+sources:
+  - name: base_data_source
+    description: "The source used to build the overall database structure and tables"
+    database: airflow_db
+    schema: public
+
+    tables:
+    - name: raw_data_table
+      description: "The raw data table containing the overall raw data information and specifications"
+      columns:
+      - name: track_id
+        description: "The track id of the record, also used as primary key"
+        type: int
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: type
+        description: "The type of vehicle of the given track id"
+        type: string
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: travel_distance
+        description: "The total travel distance of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: average_speed
+        description: "The average speed of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: lat
+        description: "The latitude of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: lon
+        description: "The longitude of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: speed
+        description: "The speed of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: lon_acc
+        description: "The longitude accuracy of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: lat_acc
+        description: "The latitude accuracy of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: time
+        description: "The time of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: compete_tracking_trajectories
+        description: "The complete trajectory trackings of the specific vehicle of the given track id"
+        type: string
+        nullable: false
+        tests:
+          - unique
+          - not_null
+
+
+    - name: base_data_table
+      description: "The base data table containing the base data information and starting trackings information"
+      columns:
+      - name: track_id
+        description: "The track id of the record, also used as primary key"
+        type: int
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: type
+        description: "The type of vehicle of the given track id"
+        type: string
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: travel_distance
+        description: "The total travel distance of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: average_speed
+        description: "The average speed of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: starting_lat
+        description: "The starting latitude of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: starting_lon
+        description: "The starting longitude of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: starting_speed
+        description: "The starting speed of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: starting_lon_acc
+        description: "The starting longitude accuracy of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: starting_lat_acc
+        description: "The starting latitude accuracy of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: starting_time
+        description: "The starting time of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+
+
+    - name: trackings_table
+      description: "The tracking data table containing the overall tracking information for each track id"
+      columns:
+      - name: track_id
+        description: "The track id of the record, also used as primary key"
+        type: int
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: compete_tracking_trajectories
+        description: "The complete trajectory trackings of the specific vehicle of the given track id"
+        type: string
+        nullable: false
+        tests:
+          - unique
+          - not_null
+
+
+    - name: detail_trackings_table
+      description: "The detailed tracking data table for each track id containing the detailed tracking information for each track id"
+      columns:
+      - name: track_id
+        description: "The track id of the record, also used as primary key"
+        type: int
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: lat
+        description: "The latitude of the specific vehicle of the given track id on the given time"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: lon
+        description: "The longitude of the specific vehicle of the given track id on the given time"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: speed
+        description: "The speed of the specific vehicle of the given track id on the given time"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: lon_acc
+        description: "The longitude accuracy of the specific vehicle of the given track id on the given time"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: lat_acc
+        description: "The latitude accuracy of the specific vehicle of the given track id on the given time"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
+      - name: time
+        description: "The time of the specific vehicle of the given track id"
+        type: float
+        nullable: false
+        tests:
+          - unique
+          - not_null
