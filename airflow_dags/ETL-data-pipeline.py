@@ -112,10 +112,10 @@ def loadDataToDWH():
         # prepare the data as a data frame format to load into the DWH
         base_data = {columns[0]: track_ids, columns[1]: types,
                      columns[2]: traveled_d, columns[3]: avg_speeds,
-                     'initial_'+columns[4]: lat, 'initial_'+columns[5]: lon,
-                     'initial_'+columns[6]: speed, 'initial_'+columns[7]:
-                     lon_acc, 'initial_'+columns[8]: lat_acc,
-                     'initial_'+columns[9]: time, columns[10]: trackings}
+                     'starting_'+columns[4]: lat, 'starting_'+columns[5]: lon,
+                     'starting_'+columns[6]: speed, 'starting_'+columns[7]:
+                     lon_acc, 'starting_'+columns[8]: lat_acc,
+                     'starting_'+columns[9]: time, columns[10]: trackings}
 
         # crate the data frame
         new_df = pd.DataFrame(base_data)
