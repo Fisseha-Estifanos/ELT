@@ -14,7 +14,7 @@ import pandas as pd
 
 load_dotenv()
 # get connection string
-connection_string = os.getenv('conn_string')
+connection_string = os.getenv('postgreSQL_conn_string')
 
 default_args = {
     'owner': 'foxtrot',
