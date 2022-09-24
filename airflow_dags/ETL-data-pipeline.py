@@ -333,10 +333,6 @@ define_primary_and_foreign_key_detail_table = PostgresOperator(
         dag=etl_dag
         )
 
-# loadDataToDWH()
-# organizeTables()
-# createTrackingDetailTable()
-
 # entry_point >> extract_data >> mysql1
 entry_point >> extract_data >> load_data_to_postgreSQL_DWH >> define_primary_key_raw_table >> organize_tables >> define_primary_key_organized_tables >> create_details >> define_primary_and_foreign_key_detail_table
 print('\nETL data pipeline DAG over and out')
