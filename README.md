@@ -1,8 +1,8 @@
-# LLM-API
+# ETL - an end to end ELT data pipeline
 A repository to demonstrate some of the main concepts behind data engineering using open source tools such as Airflow, DBT, great expectations, PostgreSQL and Redash in order to perform and end to end ELT data pipeline.
 
 
-## Large language models and prompt engineering
+## ELT 
 ![](images/image.png)
 
 **Table of contents**
@@ -23,7 +23,6 @@ A repository to demonstrate some of the main concepts behind data engineering us
 - [Author](#author)
 
 
-
 ## Overview
 > In the current state of our world, data plays a very huge role in almost everything we do. Data is everywhere, large volumes of data, forming many different types, are generated from many different sources and from a wide array of locations, very rapidly. Not making sense of this valuable resource (if not the most valuable resource) would not only be foolish but also very expensive.
 
@@ -36,10 +35,16 @@ A repository to demonstrate some of the main concepts behind data engineering us
 
 ## Major requirements
 > Python 3.5 or above
+> 
 > Pip
+> 
 > Airflow
+> 
 > DBT 
+> 
 > PostgreSQL
+> 
+> Redash
 
 
 ## DBT-help
@@ -60,7 +65,7 @@ Try running the following commands:
 - Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices
 
 
-## Documentation
+## Data features and documentation
 > A detailed feature descriptions and documentation could be found here.
 > The deployed DBT data warehouse documentation can be found here at : [deployed DBT data documentation](http://127.0.0.1:8080/#!/source_list/complete_data_source)
 
