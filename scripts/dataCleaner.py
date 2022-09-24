@@ -605,7 +605,8 @@ class dataCleaner():
         finally:
             return df
 
-    def convert_to_numeric(self, df: pd.DataFrame, columns: list) -> pd.DataFrame:
+    def convert_to_numeric(self, df: pd.DataFrame,
+                           columns: list) -> pd.DataFrame:
         """
         A function to convert features to numeric data type
 
@@ -624,7 +625,8 @@ class dataCleaner():
         try:
             for col in columns:
                 df[col] = pd.to_numeric(df[col])
-                self.logger.info(f'feature: {col} converted to numeric data type format')
+                self.logger.info(f'feature: {col} converted to numeric data '
+                                 + 'type format')
                 print(f'feature: {col} converted to numeric data type format')
         except Exception as e:
             self.logger.error(e, exec_info=True)
