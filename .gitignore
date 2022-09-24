@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# deom related ignroes
+noteboooks/playing-canvas.ipynb
