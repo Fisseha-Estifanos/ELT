@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 # deom related ignroes
-noteboooks/playing-canvas.ipynb
+notebooks/playing-canvas.ipynb
