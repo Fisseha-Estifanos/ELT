@@ -62,7 +62,7 @@ A repository to demonstrate some of the main concepts behind data engineering us
 
 ## Documentation
 > A detailed feature descriptions and documentation could be found here.
-> 
+> The deployed DBT data warehouse documentation can be found here at : [deployed DBT data documentation](http://127.0.0.1:8080/#!/source_list/complete_data_source)
 
 
 ## Install
