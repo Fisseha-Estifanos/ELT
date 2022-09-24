@@ -1,13 +1,16 @@
 # importing required libraries
+from dataclasses import replace
 import os
 import sys
 sys.path.append('..')
 sys.path.insert(1, 'scripts/')
 import defaults as defs
+import dataCleaner as dc
 from airflow import DAG
 from datetime import timedelta, datetime
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
+from airflow.providers.postgres.operators.postgres import PostgresOperator
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 import pandas as pd
@@ -20,12 +23,11 @@ default_args = {
     'owner': 'foxtrot',
     'depends_on_past': False,
     # 'start_date': days_ago(5),
-    'start_date': datetime(2022, 9, 22),
     'email': ['fisseha.137@gmail.com'],
     'email_on_failure': True,
     'email_on_retry': False,
     'retries': 1,
-    'retry_delay': timedelta(seconds=30),
+    'retry_delay': timedelta(seconds=10),
     'tags': ['week5', 'traffic data']
 }
 
@@ -33,6 +35,7 @@ default_args = {
 etl_dag = DAG(
     'ETl_data_pipeline',
     default_args=default_args,
+    start_date=datetime(2022, 9, 20),
     description='A data Extraction and loading pipeline for week 5 of 10 '
     + 'academy project',
     schedule=timedelta(days=1),     # run every day
@@ -123,9 +126,16 @@ def loadDataToDWH():
         # crate the data frame
         new_df = pd.DataFrame(base_data)
 
+        # convert features to proper data type
+        float_cols = ['track_id', 'traveled_d', 'avg_speed', 'lat', 'lon',
+                      'speed', 'lon_acc', 'lat_acc', 'time']
+        for col in float_cols:
+            new_df[col] = pd.to_numeric(new_df[col])
+
         # the table to load to
         tableName = 'raw_table'
-        new_df.to_sql(tableName, dbConnection, index=False)
+        new_df.to_sql(tableName, dbConnection, index=False,
+                      if_exists='replace')
     except ValueError as vx:
         print(vx)
     except Exception as e:
@@ -161,18 +171,32 @@ def organizeTables():
         # separating the raw data into base data and tracking data
         # base data separation
         base_df = data.iloc[0:, 0:10]
+        # convert features to proper data type
+        float_cols = ['track_id', 'traveled_d', 'avg_speed', 'lat', 'lon',
+                      'speed', 'lon_acc', 'lat_acc', 'time']
+        for col in float_cols:
+            base_df[col] = pd.to_numeric(base_df[col])
+
         # adding the base data to the DWH under the name base_data
         base_table_Name = 'base_table'
-        base_df.to_sql(base_table_Name, dbConnection, index=False)
+        base_df.to_sql(base_table_Name, dbConnection, index=False,
+                       if_exists='replace')
+        print('base table created successfully')
 
         # tracking data separation
         tracking_data = data.iloc[0:, 10:]
         tracking_data.insert(0, 'track_id', list(data['track_id'].values),
                              False)
+        # convert features to proper data type
+        float_cols = ['track_id']
+        for col in float_cols:
+            tracking_data[col] = pd.to_numeric(tracking_data[col])
+
         # adding the tracking data to the DWH under the name tracking_data
         tracking_data_Table_Name = 'tracking_table'
         tracking_data.to_sql(tracking_data_Table_Name, dbConnection,
-                             index=False)
+                             index=False, if_exists='replace')
+        print('tracking table created successfully')
     except ValueError as vx:
         print(vx)
     except Exception as e:
@@ -208,13 +232,21 @@ def createTrackingDetailTable():
 
         # detail tracking trajectory data preparation
         detail_tracking_data = data.iloc[:, 4:10]
-        detail_tracking_data.insert(0, 'track_id',
+        detail_tracking_data.insert(0, 'id',
+                                    list(range(1, len(data), 1)), False)
+        detail_tracking_data.insert(1, 'track_id',
                                     list(data['track_id'].values), False)
+        # convert features to proper data type
+        float_cols = ['id', 'track_id', 'lat', 'lon', 'speed', 'lon_acc',
+                      'lat_acc', 'time']
+        for col in float_cols:
+            detail_tracking_data[col] = pd.to_numeric(detail_tracking_data[col])
         # adding the tracking data to the DWH under the name of
         # detail_tracking_data
         detail_tracking_data_Table_Name = 'detail_tracking_table'
         detail_tracking_data.to_sql(detail_tracking_data_Table_Name,
-                                    dbConnection, index=False)
+                                    dbConnection, index=False,
+                                    if_exists='replace')
     except ValueError as vx:
         print(vx)
     except Exception as e:
@@ -253,12 +285,33 @@ load_data_to_postgreSQL_DWH = PythonOperator(
 )
 
 # TODO: refactor this handler to an ETL separate script
+# primary key setter task
+define_primary_key_raw_table = PostgresOperator(
+        task_id="define_primary_key_raw_data",
+        postgres_conn_id="postgres_default",
+        sql="ALTER TABLE raw_table ADD PRIMARY KEY (track_id);",
+        dag=etl_dag
+        )
+
+# TODO: refactor this handler to an ETL separate script
 # data table organizer task - fourth task
 organize_tables = PythonOperator(
     task_id='organize_data_tables',
     python_callable=organizeTables,
     dag=etl_dag
 )
+
+# TODO: refactor this handler to an ETL separate script
+# primary key setter task
+define_primary_key_organized_tables = PostgresOperator(
+        task_id="define_primary_key_organized_tables",
+        postgres_conn_id="postgres_default",
+        sql="""
+        ALTER TABLE base_table ADD PRIMARY KEY (track_id);
+        ALTER TABLE tracking_table ADD PRIMARY KEY (track_id);
+        """,
+        dag=etl_dag
+        )
 
 # TODO: refactor this handler to an ETL separate script
 # trajectory details table creating task - final task
@@ -268,10 +321,22 @@ create_details = PythonOperator(
     dag=etl_dag
 )
 
-loadDataToDWH()
-organizeTables()
-createTrackingDetailTable()
+# TODO: refactor this handler to an ETL separate script
+# primary and foreign key setter task
+define_primary_and_foreign_key_detail_table = PostgresOperator(
+        task_id="define_primary_and_foreign_key_detail_table",
+        postgres_conn_id="postgres_default",
+        sql="""
+        ALTER TABLE detail_tracking_table ADD PRIMARY KEY (id);
+        ALTER TABLE detail_tracking_table ADD CONSTRAINT fk_details_base FOREIGN KEY (track_id) REFERENCES base_table (track_id);
+        """,
+        dag=etl_dag
+        )
+
+# loadDataToDWH()
+# organizeTables()
+# createTrackingDetailTable()
 
 # entry_point >> extract_data >> mysql1
-entry_point >> extract_data >> load_data_to_postgreSQL_DWH >> organize_tables >> create_details
+entry_point >> extract_data >> load_data_to_postgreSQL_DWH >> define_primary_key_raw_table >> organize_tables >> define_primary_key_organized_tables >> create_details >> define_primary_and_foreign_key_detail_table
 print('\nETL data pipeline DAG over and out')
