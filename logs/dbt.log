@@ -34842,3 +34842,5 @@ with relation as (
 [0m16:46:42.006360 [info ] [MainThread]: 
 [0m16:46:42.007211 [info ] [MainThread]: 
 [0m16:46:42.008071 [info ] [MainThread]: Press Ctrl+C to exit.
+[0m17:01:09.183917 [debug] [MainThread]: Flushing usage events
+[0m17:01:12.168823 [info ] [MainThread]: ctrl-c
